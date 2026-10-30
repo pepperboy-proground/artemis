@@ -40,3 +40,19 @@ def test_cascading_config_merge():
     engine = CascadingConfigEngine()
     merged = engine.load_raw_config(cli_overrides={"default": {"model": "gemini-test-custom"}})
     assert merged.get("default", {}).get("model") == "gemini-test-custom"
+
+
+def test_parse_llm_config_interpolates_env(tmp_path):
+    """Verify ${env:...} in artemis.jsonc switches the LLM model per run."""
+    from artemis.config import llm as llm_config
+
+    config_file = tmp_path / "artemis.jsonc"
+    config_file.write_text(
+        '{"default": {"provider": "${env:T_PROVIDER:-openai}", "model": "${env:T_MODEL:-m1}",'
+        ' "fallback": {"provider": "google", "model": "g1"}}}'
+    )
+    with patch.object(llm_config, "get_config_path", return_value=config_file):
+        assert str(llm_config.parse_llm_config().operator.model) == "m1"
+        with patch.dict("os.environ", {"T_PROVIDER": "google", "T_MODEL": "m2"}):
+            cfg = llm_config.parse_llm_config()
+            assert (cfg.operator.provider, cfg.operator.model) == ("google", "m2")

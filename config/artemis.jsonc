@@ -7,8 +7,9 @@
   // 1. Global Default Model (Applied to all sub-agents unless overridden below)
   // ------------------------------------------------------------------------------
   "default": {
-    "provider": "google",
-    "model": "gemini-3.8-flash",
+    // Per-run switch: ARTEMIS_PROVIDER=openai ARTEMIS_MODEL=deepseek-flash artemis run "..."
+    "provider": "${env:ARTEMIS_PROVIDER:-google}",
+    "model": "${env:ARTEMIS_MODEL:-gemini-3.8-flash}",
     "thinking_level": "medium",
     "fallback": {
       "provider": "google",
@@ -54,7 +55,8 @@
   "nodes": {
     // 🧠 Planner: High-level goal decomposition and strategic step planning
     "planner": {
-      "thinking_level": "high"
+      "thinking_level": "high",
+      "reasoning_effort": "high"
     },
 
     // 🎯 Operator: Screen perception, element interaction, and direct execution
@@ -75,6 +77,7 @@
     // To achieve accurate [x, y] point and bounding box localization, this node MUST use specialized Gemini ER (Embodied Reasoning / Robotics) models:
     // e.g., "gemini-robotics-er-2-preview". Non-ER models will fail spatial coordinate detection.
     "object_detector": {
+      "provider": "google",
       "model": "gemini-robotics-er-2-preview",
       "fallback": {
         "provider": "google",
@@ -95,6 +98,7 @@
 
     // 🔽 Hopper: Fast lightweight package name locator
     "hopper": {
+      "provider": "google",
       "model": "gemini-3.5-flash-lite",
       "fallback": {
         "provider": "google",
@@ -121,6 +125,7 @@
     // Thoughts are streamed so the verifier's reasoning shows live in the timeline.
     "checker": {
       "thinking_level": "medium",
+      "reasoning_effort": "high",
       "include_thoughts": true
     }
     // 🎯 Planner Validation: Advisory review of milestone changes.

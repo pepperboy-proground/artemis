@@ -20,8 +20,15 @@ import pytest
 from apps.admin_console.services.model_service import ModelService
 
 
-def test_get_active_model_info_pro_architecture():
+def _use_factory_default_model(monkeypatch):
+    # A developer's personal ARTEMIS_PROVIDER/ARTEMIS_MODEL must not leak into default checks.
+    monkeypatch.delenv("ARTEMIS_PROVIDER", raising=False)
+    monkeypatch.delenv("ARTEMIS_MODEL", raising=False)
+
+
+def test_get_active_model_info_pro_architecture(monkeypatch):
     """Verify that pro profile returns Pro architecture while keeping real LLM model."""
+    _use_factory_default_model(monkeypatch)
     info = ModelService.get_active_model_info("pro")
     assert info["name"] == "Pro"
     assert info["architecture"] == "ARTEMIS Pro"
@@ -29,8 +36,9 @@ def test_get_active_model_info_pro_architecture():
     assert "id" in info
 
 
-def test_get_active_model_info_flash_architecture():
+def test_get_active_model_info_flash_architecture(monkeypatch):
     """Verify that flash profile returns Flash architecture."""
+    _use_factory_default_model(monkeypatch)
     info = ModelService.get_active_model_info("flash")
     assert info["name"] == "Flash"
     assert info["architecture"] == "ARTEMIS Flash"
